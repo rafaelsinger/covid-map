@@ -12,10 +12,10 @@ import axios from 'axios';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { Icon } from 'leaflet';
-import states from './states.json';
+import states from './data/states.json';
 
 const state = new Icon({
-  iconUrl: './clipboard.svg',
+  iconUrl: './pin.svg',
   iconSize: [25, 25]
 })
 
@@ -41,9 +41,8 @@ export default function App() {
   }, [])
 
   // useEffect(() => {
-  //   console.log(activeState);
-  //   // fetchCovidData(activeState);
-  // }, [activeState]);
+  //   fetchCovidData(activeState)
+  // }, [activeState])
 
   const fetchCoords = async () => {
     try {
@@ -53,7 +52,7 @@ export default function App() {
       for (let i = 0; i < req.length; i++){
         const stateInfo = req[i].data[0];
         if (req[i].data.length !== 0)
-          setCoords(coordsArr => [...coordsArr, {name: stateInfo.display_name, lat: stateInfo.lat, lon: stateInfo.lon}]);
+          setCoords(coordsArr => [...coordsArr, {name: stateInfo.display_name.split(',')[0], lat: stateInfo.lat, lon: stateInfo.lon}]);
       }
     } catch (err) {
       console.error(err);
@@ -82,11 +81,13 @@ export default function App() {
     }
   }
 
+  // use .toLocaleString('en-US') to format all numerical outputs w/ commas
+
   return (
-    <MapContainer id="map" center={[38.093498,-98.178923]} zoom={5} scrollWheelZoom={false}>
+    <MapContainer id="map" center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
 
       {coords.map((coord, idx) => (
@@ -97,12 +98,19 @@ export default function App() {
             coord.lon
           ]}
           icon={state}
-          click={console.log('hello world')}
+          eventHandlers={{
+            click: (e) => {
+              fetchCovidData(coord.name);
+          }}}
         >
           <Popup>
-            <div>
-              {covidData.state}: 
-              {covidData.cases} cases
+            <div className="covidpopup">
+              <h2>{coord.name}</h2>
+              <h3>Population: {covidData.population}</h3>
+              <div className="infotext">
+                <p> There have been <strong>{covidData.todayCases}</strong> Covid-19 cases and <strong>{covidData.todayDeaths}</strong> Covid-19 deaths today. </p>
+                <p> There have been {covidData.cases} total Covid-19 cases and {covidData.deaths} total covid deaths in {coord.name}. </p>
+              </div>
             </div>
           </Popup>
         </Marker>
