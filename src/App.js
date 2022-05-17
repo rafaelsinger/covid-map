@@ -9,71 +9,33 @@ TODO: make everything look better/unique through custom CSS
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer, GeoJSON} from 'react-leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
-import { Icon } from 'leaflet';
-import states from './data/states.json';
-
-const state = new Icon({
-  iconUrl: './pin.svg',
-  iconSize: [25, 25]
-})
-
-
-const provider = new OpenStreetMapProvider();
+import outlines from './data/us-state-outlines.json'
 
 export default function App() {
 
   const [covidData, setCovidData] = useState({});
-  const [stateNames, setStateNames] = useState([]);
-  const [coords, setCoords] = useState([]);
-  const [activeState, setActiveState] = useState(null);
-
-  useEffect(() => {
-    if (!stateNames || !stateNames.length){
-      return;
-    }
-    fetchCoords();
-  }, [stateNames])
-
-  useEffect(() => {
-    getStateNames();
-  }, [])
+  const [states, setStates] = useState([]);
 
   // useEffect(() => {
-  //   fetchCovidData(activeState)
-  // }, [activeState])
+  //   if (stateCovidInfo.length === 0 && covidData.length > 0){
+  //     covidData.map((state) => {
+  //       setStateCovidInfo(stateArr => [...stateArr, {state: state.state, deaths: state.tot_death}])
+  //     })
+  //   }
+  // }, [covidData])
 
-  const fetchCoords = async () => {
+  //get covid data for the current week. if it has not been updated yet to all 50 states, get previous week's data.
+  const fetchCovidData = async () => {
     try {
-      const req = await Promise.all(stateNames.map(async (state) => {
-        return await axios.get(`https://nominatim.geocoding.ai/search.php?state=${state}&format=jsonv2`);
-      }))
-      for (let i = 0; i < req.length; i++){
-        const stateInfo = req[i].data[0];
-        if (req[i].data.length !== 0)
-          setCoords(coordsArr => [...coordsArr, {name: stateInfo.display_name.split(',')[0], lat: stateInfo.lat, lon: stateInfo.lon}]);
+      var curr = new Date;
+      var firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
+      let response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`);
+      if (response.data.length < 50){
+        firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
+        response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`)
       }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const getStateNames = () => {
-    try {
-      const stateArr = [];
-      for (let i = 0; i < states.length; i++){
-        stateArr.push(states[i].name);
-      }
-      setStateNames(stateArr);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  const fetchCovidData = async (stateName) => {
-    try {
-      const response = await axios.get(`https://disease.sh/v3/covid-19/states/${stateName}`);
       setCovidData(response.data);
     } 
     catch (err) {
@@ -81,7 +43,48 @@ export default function App() {
     }
   }
 
-  // use .toLocaleString('en-US') to format all numerical outputs w/ commas
+  useEffect(() => {
+    fetchCovidData();
+  }, []);
+  // console.log(covidDeaths);
+
+  /* 
+    GOAL FOR TOMORROW:
+    as of right now, covidData is read as an empty array because it hasn't been updated yet through the asynchronous fetch
+    call. need to find a way to access the covidData array AFTER it loads, which means then we can pull out the specific data
+    and pass it through to the styleCovidData function.
+  */
+  const getStateCovidData = (stateName) => {
+    // let data = await covidData;
+    // console.log(covidData);
+    let obj = covidData.find(o => o.state === stateName);
+    return obj;
+  }
+
+  // console.log(getStateCovidData('IL'));
+
+  //FUNCTION FOR GETTING COLOR BASED OFF COVID deaths
+  function getColor(deaths) {
+    return deaths > 100000 ? '#b30000' :
+           deaths > 50000  ? '#e34a33' :
+           deaths > 10000  ? '#fc8d59' :
+           deaths > 5000  ? '#fdcc8a' :
+           deaths > 1000   ? '#fef0d9' :
+                          'fef0d9'
+  }
+
+  //STYLING FUNCTION
+  function styleCovidData(feature) {
+      const stateTotalDeaths = getStateCovidData(feature.properties.stusab).tot_deaths; 
+      return {
+          fillColor: getColor(stateTotalDeaths),
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.7
+      };
+  }
 
   return (
     <MapContainer id="map" center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true}>
@@ -89,32 +92,9 @@ export default function App() {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
+      
+      <GeoJSON data={outlines} style={styleCovidData} />
 
-      {coords.map((coord, idx) => (
-        <Marker 
-          key={idx} 
-          position={[
-            coord.lat,
-            coord.lon
-          ]}
-          icon={state}
-          eventHandlers={{
-            click: (e) => {
-              fetchCovidData(coord.name);
-          }}}
-        >
-          <Popup>
-            <div className="covidpopup">
-              <h2>{coord.name}</h2>
-              <h3>Population: {covidData.population}</h3>
-              <div className="infotext">
-                <p> There have been <strong>{covidData.todayCases}</strong> Covid-19 cases and <strong>{covidData.todayDeaths}</strong> Covid-19 deaths today. </p>
-                <p> There have been {covidData.cases} total Covid-19 cases and {covidData.deaths} total covid deaths in {coord.name}. </p>
-              </div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
     </MapContainer>
   );
-}
+} 
