@@ -18,8 +18,10 @@
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-leaflet": "^4.0.0",
+    "react-leaflet-custom-control": "^1.2.6",
     "react-scripts": "5.0.1",
     "stream": "^0.0.2",
+    "us-state-converter": "^1.0.6",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
