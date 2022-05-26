@@ -1,32 +1,27 @@
 import React, { useRef, useEffect } from 'react';
-import { GeoJSON, useMap } from 'react-leaflet';
+import { GeoJSON, useMap, TileLayer, LayersControl } from 'react-leaflet';
 import Control from 'react-leaflet-custom-control'
 import states from 'us-state-converter';
 import './index.css';
 
 const CovidMap = (props) => {
 
-    useEffect(() => {
-        //CREATE LEGEND
-        const generateLegend = () => {
-            const genLegend = legend.current;
-            const grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000]
-            for (let i = 0; i < grades.length; i++){
-                genLegend.innerHTML +=
-                    // `<i style='background:${getColor(grades[i]+1)}"></i>` + 
-                    //  grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-            }
-        }
-    
-        generateLegend();
-    })
-
     const geoJsonRef = useRef();
     const infobody = useRef();
-    const legend = useRef();
+    const infohead = useRef();
+
     const map = useMap();
+
+    const generateLegend = () => {
+        let div = "";
+        const grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000]
+        for (let i = 0; i < grades.length; i++){
+            div +=
+                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+        }
+        return {__html: div};
+    }
 
     function getColor(deaths) {
         return deaths > 100000 ? '#800026' :
@@ -103,12 +98,19 @@ const CovidMap = (props) => {
         <GeoJSON attribution="Data from <a href=https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36/data>CDC</a>" data={props.mapData} style={styleCovidData} onEachFeature={onEachFeature} ref={geoJsonRef} /> 
         <Control>
             <div className='info'>
-                <h4>COVID-19 DEATHS</h4>
+                <h4 ref={infohead}>TOTAL COVID-19 DEATHS</h4>
                 <div ref={infobody}>Hover over a state</div>
             </div>
         </Control>
         <Control position='bottomright'>
-            <div ref={legend} className='info legend'></div>
+            <div className='info legend' dangerouslySetInnerHTML={generateLegend()}></div>
+        </Control>
+        <Control position='topright' >
+            <select>
+                <option value="tot_death">Total Deaths</option>
+                <option value="tot_cases">Total Cases</option>
+                <option value="cases_week">Cases This Week</option>
+            </select>
         </Control>
      </>    
     )

@@ -55,8 +55,6 @@ code {
   opacity: 0.7;
 }
 
-.attribution{
-  bottom: 0;
-  left: 0;
-  background-color: black;
+.container{
+  display: flex;
 }

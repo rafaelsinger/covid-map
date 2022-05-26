@@ -1,13 +1,13 @@
 /*
 BUGS:
-fix Alaska
-fix zoom on click (too zoomed in)
+fix attribution (needs to be below the legend)
+fix bounds (setMaxBounds) - maybe unnecessary
 */
 
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer, AttributionControl } from 'react-leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import outlines from './data/us-state-outlines.json';
 import CovidMap from './CovidMap';
@@ -39,12 +39,12 @@ export default function App() {
   }, []);
 
   return (
-    <MapContainer id="map" center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true}>
+    <MapContainer center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true} minZoom={3} maxZoom={6.5} >      
       <TileLayer
-        className="attribution"
-        attribution='Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />        
+            className="attribution"
+            attribution='Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+      />  
       {covidData && <CovidMap mapData={outlines} covidData={covidData} />}
     </MapContainer>
   );
