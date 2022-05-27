@@ -15,7 +15,6 @@ import CovidMap from './CovidMap';
 export default function App() {
 
   const [covidData, setCovidData] = useState(null);
-  const [states, setStates] = useState([]);
 
   //get covid data for the current week. if it has not been updated yet to all 50 states, get previous week's data.
   const fetchCovidData = async () => {
