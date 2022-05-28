@@ -23,7 +23,7 @@ const CovidMap = (props) => {
         data === "tot_death" ? setInfoHead('TOTAL COVID-19 DEATHS') : 
         data === 'tot_cases' ? setInfoHead('TOTAL COVID-19 CASES') :
         data === 'new_case' ? setInfoHead('COVID-19 CASES THIS WEEK') : 
-        data === 'series_complete_pop_pct' ? setInfoHead('PERCENTAGE VACCINATED') : console.error() ;
+        data === 'series_complete_pop_pct' ? setInfoHead('PERCENTAGE FULLY VACCINATED') : console.error() ;
     }, [data])
 
     useEffect(() => {
@@ -191,7 +191,7 @@ const CovidMap = (props) => {
                 <option value="tot_death">Total Deaths</option>
                 <option value="tot_cases">Total Cases</option>
                 <option value="new_case">Cases This Week</option>
-                <option value="series_complete_pop_pct">Percentage Vaccinated</option>
+                <option value="series_complete_pop_pct">Percentage Fully Vaccinated</option>
             </select>
         </Control>
      </>    

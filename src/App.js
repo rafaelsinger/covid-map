@@ -10,7 +10,7 @@ import axios from 'axios';
 import { MapContainer, Marker, Popup, TileLayer, AttributionControl } from 'react-leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import outlines from './data/us-state-outlines.json';
-import CovidMap from './CovidMap';
+import CovidMap from './CovidMap.js';
 
 export default function App() {
 
