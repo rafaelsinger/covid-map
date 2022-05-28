@@ -43,7 +43,7 @@ export default function App() {
       let response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`);
       if (response.data.length < 50){
         time = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
-        response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${time}`)
+        response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`)
       }
       setVaxData(response.data)
     } catch (err) {

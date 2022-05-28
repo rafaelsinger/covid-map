@@ -19,6 +19,8 @@ const CovidMap = (props) => {
 
     const map = useMap();
 
+    // console.log(props.vaxData);
+
     useEffect(() => {
         data === "tot_death" ? setInfoHead('TOTAL COVID-19 DEATHS') : 
         data === 'tot_cases' ? setInfoHead('TOTAL COVID-19 CASES') :
