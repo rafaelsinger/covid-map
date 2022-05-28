@@ -15,18 +15,36 @@ const CovidMap = (props) => {
     dataRef.current = data;
     const [infoHead, setInfoHead] = useState('TOTAL COVID-19 DEATHS');
     const [infoBody, setInfoBody] = useState({__html: `<div>Hover over a state</div>`});
+    const [target, setTarget] = useState(null);
 
     const map = useMap();
 
     useEffect(() => {
         data === "tot_death" ? setInfoHead('TOTAL COVID-19 DEATHS') : 
         data === 'tot_cases' ? setInfoHead('TOTAL COVID-19 CASES') :
-        data === 'new_case' ? setInfoHead('COVID-19 CASES THIS WEEK') : console.log('test');
+        data === 'new_case' ? setInfoHead('COVID-19 CASES THIS WEEK') : console.error() ;
     }, [data])
+
+    useEffect(() => {
+        if (target && target.event.type === 'mouseover'){ 
+            target.target.setStyle({
+                weight: 5,
+                color: '#666',
+                dashArray: '',
+                fillOpacity: 0.7
+            });
+            target.target.bringToFront(); 
+        } else if (target && target.event.type === 'mouseout') {
+            geoJsonRef.current.resetStyle(target.target);
+        } 
+    }, [infoBody])
 
     const generateLegend = () => {
         let div = "";
-        const grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000]
+        let grades = [];
+        data === "tot_death" ? grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000] : 
+        data === 'tot_cases' ? grades = [50000, 100000, 250000, 500000, 1000000, 2500000, 5000000] :
+        data === 'new_case' ? grades = [500, 1000, 2500, 5000, 7500, 10000, 20000] : console.error() ;
         for (let i = 0; i < grades.length; i++){
             div +=
                 '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
@@ -36,7 +54,7 @@ const CovidMap = (props) => {
     }
 
     function getColor(num) {
-        if (data === 'tot_death'){
+        if (dataRef.current === 'tot_death'){
             return num > 100000 ? '#800026' :
                     num > 50000  ? '#BD0026' :
                     num > 20000  ? '#E31A1C' :
@@ -45,7 +63,7 @@ const CovidMap = (props) => {
                     num > 2500   ? '#FEB24C' :
                     num > 1000   ? '#FED976' :
                                     '#FFEDA0';
-        } else if (data === 'tot_cases'){
+        } else if (dataRef.current === 'tot_cases'){
             return num > 5000000 ? '#800026' :
                     num > 2500000  ? '#BD0026' :
                     num > 1000000  ? '#E31A1C' :
@@ -54,7 +72,7 @@ const CovidMap = (props) => {
                     num > 100000   ? '#FEB24C' :
                     num > 50000   ? '#FED976' :
                                     '#FFEDA0';
-        } else if (data === 'new_case'){
+        } else if (dataRef.current === 'new_case'){
             return num > 20000 ? '#800026' :
                     num > 10000  ? '#BD0026' :
                     num > 7500  ? '#E31A1C' :
@@ -71,16 +89,17 @@ const CovidMap = (props) => {
         let color = '';
         const stateAbr = feature.properties.stusab;
         const stateWithCovid = props.covidData.find(state => state.state === stateAbr);
-        if (data === 'tot_death'){
+        if (dataRef.current === 'tot_death'){
             const stateTotalDeaths = stateWithCovid.tot_death;
             color = getColor(stateTotalDeaths);
-        } else if (data === 'tot_cases'){
+        } else if (dataRef.current === 'tot_cases'){
             const stateTotalCases = stateWithCovid.tot_cases;
             color = getColor(stateTotalCases);
-        } else if (data === 'new_case'){
+        } else if (dataRef.current === 'new_case'){
             const stateNewCase = stateWithCovid.new_case;
             color = getColor(stateNewCase);
         }
+
         return {
             fillColor: color,
             weight: 2,
@@ -94,6 +113,7 @@ const CovidMap = (props) => {
     // //HIGHLIGHT FUNCTION
     function highlightFeature(e){
         var target = e.target;
+        setTarget({target: target, event: e});
         const stateAbr = target.feature.properties.stusab;
         const stateWithCovid = props.covidData.find(state => state.state === stateAbr);
         let div = '';
@@ -102,31 +122,17 @@ const CovidMap = (props) => {
         const prettyCaseNumbers = stateWithCovid.tot_cases.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const prettyNewCaseNumbers = Math.round(stateWithCovid.new_case).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-        console.log(prettyNewCaseNumbers);
-
         dataRef.current === 'tot_death' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyDeathNumbers} deaths</div>` :  
         dataRef.current === 'tot_cases' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyCaseNumbers} cases</div>` :
         dataRef.current === 'new_case' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyNewCaseNumbers} cases</div>` : 
-        console.log ('hi');
+        console.error();
 
-        setInfoBody({__html: div})
-
-        target.setStyle({
-            weight: 5,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-
-        target.bringToFront();
-
+        setInfoBody({__html: div});
     }
-
-
 
     //RESET HIGHLIGHT
     function resetHighlight(e) {
-        geoJsonRef.current.resetStyle(e.target);
+        setTarget({target: e.target, event: e});
         setInfoBody({__html: '<div>Hover over a state</div>'})
     }
 
