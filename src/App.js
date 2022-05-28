@@ -15,12 +15,13 @@ import CovidMap from './CovidMap';
 export default function App() {
 
   const [covidData, setCovidData] = useState(null);
+  const [vaxData, setVaxData] = useState(null);
 
   //get covid data for the current week. if it has not been updated yet to all 50 states, get previous week's data.
   const fetchCovidData = async () => {
     try {
-      var curr = new Date;
-      var firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
+      let curr = new Date;
+      let firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
       let response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`);
       if (response.data.length < 50){
         firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
@@ -33,8 +34,29 @@ export default function App() {
     }
   }
 
+  const fetchVaxData = async () => {
+    try {
+      let curr = new Date;
+      const offset = curr.getTimezoneOffset()
+      curr = new Date(curr.getTime() - (offset*60*1000))
+      let time = curr.toISOString().split('T')[0];
+      let response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`);
+      if (response.data.length < 50){
+        time = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
+        response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${time}`)
+      }
+      setVaxData(response.data)
+      // var firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
+      // console.log(firstDay)
+      // `https://data.cdc.gov/resource/unsk-b7fc.json?date=2022-05-27`
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   useEffect(() => {
     fetchCovidData();
+    fetchVaxData();
   }, []);
 
   return (
@@ -44,7 +66,7 @@ export default function App() {
             attribution='Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />  
-      {covidData && <CovidMap mapData={outlines} covidData={covidData} />}
+      {(covidData && vaxData) && <CovidMap mapData={outlines} covidData={covidData} vaxData={vaxData} />}
     </MapContainer>
   );
 } 

@@ -22,7 +22,8 @@ const CovidMap = (props) => {
     useEffect(() => {
         data === "tot_death" ? setInfoHead('TOTAL COVID-19 DEATHS') : 
         data === 'tot_cases' ? setInfoHead('TOTAL COVID-19 CASES') :
-        data === 'new_case' ? setInfoHead('COVID-19 CASES THIS WEEK') : console.error() ;
+        data === 'new_case' ? setInfoHead('COVID-19 CASES THIS WEEK') : 
+        data === 'series_complete_pop_pct' ? setInfoHead('PERCENTAGE VACCINATED') : console.error() ;
     }, [data])
 
     useEffect(() => {
@@ -44,11 +45,20 @@ const CovidMap = (props) => {
         let grades = [];
         data === "tot_death" ? grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000] : 
         data === 'tot_cases' ? grades = [50000, 100000, 250000, 500000, 1000000, 2500000, 5000000] :
-        data === 'new_case' ? grades = [500, 1000, 2500, 5000, 7500, 10000, 20000] : console.error() ;
+        data === 'new_case' ? grades = [500, 1000, 2500, 5000, 7500, 10000, 20000] : 
+        data === 'series_complete_pop_pct' ? grades = [85, 75, 70, 65, 60, 55, 50] : console.error() ;
         for (let i = 0; i < grades.length; i++){
-            div +=
-                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            if (data !== 'series_complete_pop_pct'){
+                div +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            } else if (data === 'series_complete_pop_pct'){
+                if (grades[i+1]){
+                    div += 
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    grades[i] + '% ' + '&ndash;' + ' ' + grades[i+1] + '%' + '<br>';
+                }
+            }
         }
         return {__html: div};
     }
@@ -81,6 +91,15 @@ const CovidMap = (props) => {
                     num > 1000   ? '#FEB24C' :
                     num > 500   ? '#FED976' :
                                     '#FFEDA0';
+        } else if (dataRef.current === 'series_complete_pop_pct'){
+            return num > 80 ? '#005824' :
+                    num > 75 ? '#238b45' :
+                    num > 70 ? '#41ae76' :
+                    num > 65 ? '#66c2a4' :
+                    num > 60 ? '#99d8c9' :
+                    num > 55 ? '#ccece6' :
+                    num > 50 ? '#ccf0e2' : 
+                                '#c7e9c0' ;
         }
     }
 
@@ -98,6 +117,10 @@ const CovidMap = (props) => {
         } else if (dataRef.current === 'new_case'){
             const stateNewCase = stateWithCovid.new_case;
             color = getColor(stateNewCase);
+        } else if (dataRef.current === 'series_complete_pop_pct'){
+            const stateWithVax = props.vaxData.find(state => state.location === stateAbr);
+            const statePercentVax = stateWithVax.series_complete_pop_pct;
+            color = getColor(statePercentVax);
         }
 
         return {
@@ -116,6 +139,7 @@ const CovidMap = (props) => {
         setTarget({target: target, event: e});
         const stateAbr = target.feature.properties.stusab;
         const stateWithCovid = props.covidData.find(state => state.state === stateAbr);
+        const stateWithVax = props.vaxData.find(state => state.location === stateAbr);
         let div = '';
 
         const prettyDeathNumbers = stateWithCovid.tot_death.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -125,6 +149,7 @@ const CovidMap = (props) => {
         dataRef.current === 'tot_death' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyDeathNumbers} deaths</div>` :  
         dataRef.current === 'tot_cases' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyCaseNumbers} cases</div>` :
         dataRef.current === 'new_case' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyNewCaseNumbers} cases</div>` : 
+        dataRef.current === 'series_complete_pop_pct' ? div = `<div class='state'>${states.fullName(stateWithVax.location)} </div><div>${stateWithVax.series_complete_pop_pct}%</div>` :
         console.error();
 
         setInfoBody({__html: div});
@@ -166,6 +191,7 @@ const CovidMap = (props) => {
                 <option value="tot_death">Total Deaths</option>
                 <option value="tot_cases">Total Cases</option>
                 <option value="new_case">Cases This Week</option>
+                <option value="series_complete_pop_pct">Percentage Vaccinated</option>
             </select>
         </Control>
      </>    
