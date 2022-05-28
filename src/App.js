@@ -46,9 +46,6 @@ export default function App() {
         response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${time}`)
       }
       setVaxData(response.data)
-      // var firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
-      // console.log(firstDay)
-      // `https://data.cdc.gov/resource/unsk-b7fc.json?date=2022-05-27`
     } catch (err) {
       console.error(err);
     }
@@ -60,13 +57,14 @@ export default function App() {
   }, []);
 
   return (
-    <MapContainer center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true} minZoom={3} maxZoom={6.5} >      
+    <MapContainer center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true} minZoom={3} maxZoom={6.5} attributionControl={false} fullscreenControl={true}>      
       <TileLayer
             className="attribution"
             attribution='Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />  
       {(covidData && vaxData) && <CovidMap mapData={outlines} covidData={covidData} vaxData={vaxData} />}
+      <AttributionControl position="bottomleft"/>
     </MapContainer>
   );
 } 
