@@ -40,11 +40,13 @@ export default function App() {
       const offset = curr.getTimezoneOffset()
       curr = new Date(curr.getTime() - (offset*60*1000))
       let time = curr.toISOString().split('T')[0];
-      let response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`);
-      if (response.data.length < 50){
-        time = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
-        response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`)
-      }
+      let response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=2022-06-10`); 
+      //data set discontinued so using data from last week with data on all 50 states
+      // if (response.data.length < 50){
+      //   time = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
+      //   console.log(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`);
+      //   response = await axios.get(`https://data.cdc.gov/resource/unsk-b7fc.json?date=${time}`)
+      // }
       setVaxData(response.data)
     } catch (err) {
       console.error(err);
@@ -60,7 +62,7 @@ export default function App() {
     <MapContainer center={[38.093498,-98.178923]} zoom={4.25} scrollWheelZoom={true} minZoom={3} maxZoom={6.5} attributionControl={false} fullscreenControl={true}>      
       <TileLayer
             className="attribution"
-            attribution='Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+            attribution='Made by <a href="https://www.rafaelsinger.com">Rafael Singer</a>, Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />  
       {(covidData && vaxData) && <CovidMap mapData={outlines} covidData={covidData} vaxData={vaxData} />}
