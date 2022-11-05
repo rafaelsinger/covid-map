@@ -22,11 +22,13 @@ export default function App() {
     try {
       let curr = new Date;
       let firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
-      let response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`);
-      if (response.data.length < 50){
-        firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
-        response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`)
-      }
+      console.log(firstDay);
+      //data set discontinued – using data from October 5, 2022
+      let response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=2022-10-05`);
+      // if (response.data.length < 50){
+      //   firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
+      //   response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`)
+      // }
       setCovidData(response.data);
     } 
     catch (err) {
