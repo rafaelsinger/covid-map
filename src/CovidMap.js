@@ -11,7 +11,7 @@ const CovidMap = (props) => {
     const infohead = useRef();
     const dataRef = useRef();
 
-    const [data, setData] = useState('tot_death');
+    const [data, setData] = useState('tot_deaths');
     dataRef.current = data;
     const [infoHead, setInfoHead] = useState('TOTAL COVID-19 DEATHS');
     const [infoBody, setInfoBody] = useState({__html: `<div>Hover over a state</div>`});
@@ -20,9 +20,8 @@ const CovidMap = (props) => {
     const map = useMap();
 
     useEffect(() => {
-        data === "tot_death" ? setInfoHead('TOTAL COVID-19 DEATHS') : 
+        data === "tot_deaths" ? setInfoHead('TOTAL COVID-19 DEATHS') : 
         data === 'tot_cases' ? setInfoHead('TOTAL COVID-19 CASES') :
-        data === 'new_case' ? setInfoHead('COVID-19 CASES THIS WEEK') : 
         data === 'series_complete_pop_pct' ? setInfoHead('PERCENTAGE FULLY VACCINATED') : console.error() ;
     }, [data])
 
@@ -43,9 +42,8 @@ const CovidMap = (props) => {
     const generateLegend = () => {
         let div = "";
         let grades = [];
-        data === "tot_death" ? grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000] : 
+        data === "tot_deaths" ? grades = [1000, 2500, 5000, 10000, 20000, 50000, 100000] : 
         data === 'tot_cases' ? grades = [50000, 100000, 250000, 500000, 1000000, 2500000, 5000000] :
-        data === 'new_case' ? grades = [500, 1000, 2500, 5000, 7500, 10000, 20000] : 
         data === 'series_complete_pop_pct' ? grades = [85, 75, 70, 65, 60, 55, 50] : console.error() ;
         for (let i = 0; i < grades.length; i++){
             if (data !== 'series_complete_pop_pct'){
@@ -64,7 +62,7 @@ const CovidMap = (props) => {
     }
 
     function getColor(num) {
-        if (dataRef.current === 'tot_death'){
+        if (dataRef.current === 'tot_deaths'){
             return num > 100000 ? '#800026' :
                     num > 50000  ? '#BD0026' :
                     num > 20000  ? '#E31A1C' :
@@ -81,15 +79,6 @@ const CovidMap = (props) => {
                     num > 250000   ? '#FD8D3C' :
                     num > 100000   ? '#FEB24C' :
                     num > 50000   ? '#FED976' :
-                                    '#FFEDA0';
-        } else if (dataRef.current === 'new_case'){
-            return num > 20000 ? '#800026' :
-                    num > 10000  ? '#BD0026' :
-                    num > 7500  ? '#E31A1C' :
-                    num > 5000  ? '#FC4E2A' :
-                    num > 2500   ? '#FD8D3C' :
-                    num > 1000   ? '#FEB24C' :
-                    num > 500   ? '#FED976' :
                                     '#FFEDA0';
         } else if (dataRef.current === 'series_complete_pop_pct'){
             return num > 80 ? '#005824' :
@@ -108,15 +97,12 @@ const CovidMap = (props) => {
         let color = '';
         const stateAbr = feature.properties.stusab;
         const stateWithCovid = props.covidData.find(state => state.state === stateAbr);
-        if (dataRef.current === 'tot_death'){
-            const stateTotalDeaths = stateWithCovid.tot_death;
+        if (dataRef.current === 'tot_deaths'){
+            const stateTotalDeaths = stateWithCovid.tot_deaths;
             color = getColor(stateTotalDeaths);
         } else if (dataRef.current === 'tot_cases'){
             const stateTotalCases = stateWithCovid.tot_cases;
             color = getColor(stateTotalCases);
-        } else if (dataRef.current === 'new_case'){
-            const stateNewCase = stateWithCovid.new_case;
-            color = getColor(stateNewCase);
         } else if (dataRef.current === 'series_complete_pop_pct'){
             const stateWithVax = props.vaxData.find(state => state.location === stateAbr);
             const statePercentVax = stateWithVax?.series_complete_pop_pct;
@@ -142,13 +128,14 @@ const CovidMap = (props) => {
         const stateWithVax = props.vaxData.find(state => state.location === stateAbr);
         let div = '';
 
-        const prettyDeathNumbers = stateWithCovid.tot_death.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        console.log(stateWithCovid.tot_deaths);
+
+        const prettyDeathNumbers = stateWithCovid.tot_deaths.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",").replace(/\.0+$/, "");;
         const prettyCaseNumbers = stateWithCovid.tot_cases.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const prettyNewCaseNumbers = Math.round(stateWithCovid.new_case).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-        dataRef.current === 'tot_death' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyDeathNumbers} deaths</div>` :  
+        dataRef.current === 'tot_deaths' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyDeathNumbers} deaths</div>` :  
         dataRef.current === 'tot_cases' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyCaseNumbers} cases</div>` :
-        dataRef.current === 'new_case' ? div = `<div class='state'>${states.fullName(stateWithCovid.state)} </div><div>${prettyNewCaseNumbers} cases</div>` : 
         dataRef.current === 'series_complete_pop_pct' ? div = `<div class='state'>${states.fullName(stateWithVax.location)} </div><div>${stateWithVax.series_complete_pop_pct}%</div>` :
         console.error();
 
@@ -188,9 +175,8 @@ const CovidMap = (props) => {
         </Control>
         <Control position='topright' >
             <select name="data" className="data" value={data} onChange={e => setData(e.target.value)}>
-                <option value="tot_death">Total Deaths</option>
+                <option value="tot_deaths">Total Deaths</option>
                 <option value="tot_cases">Total Cases</option>
-                <option value="new_case">Cases This Week</option>
                 <option value="series_complete_pop_pct">Percentage Fully Vaccinated</option>
             </select>
         </Control>

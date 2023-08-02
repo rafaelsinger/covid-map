@@ -23,8 +23,8 @@ export default function App() {
       let curr = new Date;
       let firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay())).toISOString().split('T')[0];
       console.log(firstDay);
-      //data set discontinued – using data from October 5, 2022
-      let response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=2022-10-05`);
+      //old data set deleted :( – using new data set that unfortunately isn't updated anymore but works
+      let response = await axios.get(`https://data.cdc.gov/resource/pwn4-m3yp.json?date_updated=2022-9-01`);
       // if (response.data.length < 50){
       //   firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()-7)).toISOString().split('T')[0];
       //   response = await axios.get(`https://data.cdc.gov/resource/9mfq-cb36.json?submission_date=${firstDay}`)

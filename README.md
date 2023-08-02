@@ -5,7 +5,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Data
 
-All data was sourced through the [CDC](https://data.cdc.gov/Case-Surveillance/United-States-COVID-19-Cases-and-Deaths-by-State-o/9mfq-cb36/data). Any inaccuracies with the data can be attributed to errors with the dataset. 
+All data was sourced through the [CDC](https://data.cdc.gov/resource/pwn4-m3yp.json). Any inaccuracies with the data can be attributed to errors with the dataset. 
 
 ### Categories:
 
